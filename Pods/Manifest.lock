@@ -1,0 +1,51 @@
+PODS:
+  - OMGHTTPURLRQ (2.1):
+    - OMGHTTPURLRQ/RQ (= 2.1)
+  - OMGHTTPURLRQ/FormURLEncode (2.1)
+  - OMGHTTPURLRQ/RQ (2.1):
+    - OMGHTTPURLRQ/FormURLEncode
+    - OMGHTTPURLRQ/UserAgent
+  - OMGHTTPURLRQ/UserAgent (2.1)
+  - PromiseKit (1.5.1):
+    - PromiseKit/CALayer (= 1.5.1)
+    - PromiseKit/NSNotificationCenter (= 1.5.1)
+    - PromiseKit/NSURLConnection (= 1.5.1)
+    - PromiseKit/Pause (= 1.5.1)
+    - PromiseKit/UIActionSheet (= 1.5.1)
+    - PromiseKit/UIAlertView (= 1.5.1)
+    - PromiseKit/UIView (= 1.5.1)
+    - PromiseKit/UIViewController (= 1.5.1)
+    - PromiseKit/Until (= 1.5.1)
+    - PromiseKit/When (= 1.5.1)
+  - PromiseKit/CALayer (1.5.1):
+    - PromiseKit/Promise
+  - PromiseKit/NSNotificationCenter (1.5.1):
+    - PromiseKit/Promise
+  - PromiseKit/NSURLConnection (1.5.1):
+    - OMGHTTPURLRQ
+    - PromiseKit/Promise
+  - PromiseKit/Pause (1.5.1):
+    - PromiseKit/Promise
+  - PromiseKit/Promise (1.5.1)
+  - PromiseKit/UIActionSheet (1.5.1):
+    - PromiseKit/Promise
+  - PromiseKit/UIAlertView (1.5.1):
+    - PromiseKit/Promise
+  - PromiseKit/UIView (1.5.1):
+    - PromiseKit/Promise
+  - PromiseKit/UIViewController (1.5.1):
+    - PromiseKit/Promise
+  - PromiseKit/Until (1.5.1):
+    - PromiseKit/Promise
+    - PromiseKit/When
+  - PromiseKit/When (1.5.1):
+    - PromiseKit/Promise
+
+DEPENDENCIES:
+  - PromiseKit
+
+SPEC CHECKSUMS:
+  OMGHTTPURLRQ: f8c515dfd2f57a5d74c710978f600231f52afec5
+  PromiseKit: b1145ebb1dd0780566952689191ea31466198ee8
+
+COCOAPODS: 0.36.0
