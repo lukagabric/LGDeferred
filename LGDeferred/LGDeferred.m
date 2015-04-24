@@ -22,12 +22,17 @@
 
 @implementation LGDeferred
 
+#pragma mark - Static
+
++ (LGDeferred *)newWithCancelBlock:(LGCancelDeferred)cancelBlock {
+    return [[self alloc] initWithCancelBlock:cancelBlock];
+}
+
 #pragma mark - Init
 
-- (instancetype)initWithCancelBlock:(LGCancelDeferred)cancelBlock {
+- (instancetype)init {
     self = [super init];
     if (self) {
-        self.cancelBlock = cancelBlock;
         self.promise = [PMKPromise promiseWithResolver:^(PMKResolver resolve) {
             self.promiseResolverBlock = resolve;
         }];
@@ -35,13 +40,25 @@
     return self;
 }
 
+- (instancetype)initWithCancelBlock:(LGCancelDeferred)cancelBlock {
+    self = [self init];
+    if (self) {
+        self.cancelBlock = cancelBlock;
+    }
+    return self;
+}
+
 #pragma mark - Deferred methods
 
 - (void)resolve:(id)result {
+    if ([self.promise resolved]) return;
+
     self.promiseResolverBlock(result);
 }
 
 - (void)reject:(NSError *)error {
+    if ([self.promise resolved]) return;
+
     NSError *e = error;
     
     if (![e isKindOfClass:[NSError class]]) {
@@ -52,12 +69,7 @@
 }
 
 - (void)cancel {
-    if ([self.promise resolved]) {
-#if DEBUG
-        NSLog(@"Promise already resolved");
-#endif
-        return;
-    }
+    if ([self.promise resolved]) return;
     
     NSError *cancelError = [NSError errorWithDomain:LGErrorDomainPromiseCancelled code:0 userInfo:nil];
     

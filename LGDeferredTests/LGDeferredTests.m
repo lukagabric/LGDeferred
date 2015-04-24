@@ -29,39 +29,26 @@
 }
 
 - (void)testCancel {
-    id ex1 = [self expectationWithDescription:@""];
+    id exp = [self expectationWithDescription:@""];
     
     __weak id weakSelf = self;
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    self.deferred = [LGDeferred newWithCancelBlock:^{
+        LGDeferredTests *strongSelf = weakSelf;
+        if (!strongSelf) return;
+        
+        XCTAssertTrue(strongSelf.deferred.cancelled);
+    }];
+
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         LGDeferredTests *strongSelf = weakSelf;
         if (!strongSelf) return;
         
         [strongSelf.deferred cancel];
+        XCTAssertTrue([strongSelf.deferred.promise resolved]);
+        XCTAssertTrue(strongSelf.deferred.cancelled);
+        
+        [exp fulfill];
     });
-    
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-        LGDeferredTests *strongSelf = weakSelf;
-        if (!strongSelf) return;
-        
-        if (![strongSelf.deferred cancelled]) {
-            [strongSelf.deferred resolve:@2];
-            XCTAssertTrue(NO);
-        }
-        else {
-            XCTAssertTrue(YES);
-        }
-        
-        [ex1 fulfill];
-    });
-    
-    self.deferred = [[LGDeferred alloc] initWithCancelBlock:^{
-        LGDeferredTests *strongSelf = weakSelf;
-        if (!strongSelf) return;
-        
-        BOOL cancelled = [strongSelf.deferred cancelled];
-        XCTAssertTrue(cancelled);
-    }];
     
     PMKPromise *promise = self.deferred.promise;
     
@@ -74,11 +61,146 @@
         
         NSLog(@"Caught error: %@", error);
         
-        BOOL cancelled = [strongSelf.deferred cancelled];
-        XCTAssertTrue(cancelled);
+        XCTAssertTrue(strongSelf.deferred.cancelled);
     });
     
-    [self waitForExpectationsWithTimeout:3 handler:nil];
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testReject {
+    id exp = [self expectationWithDescription:@""];
+
+    self.deferred = [LGDeferred new];
+    
+    PMKPromise *promise = self.deferred.promise;
+    
+    __weak id weakSelf = self;
+    promise.then(^(id result) {
+        NSLog(@"%@", result);
+        XCTAssertTrue(NO);
+    }).catch(^(NSError *error) {
+        LGDeferredTests *strongSelf = weakSelf;
+        if (!strongSelf) return;
+        
+        NSLog(@"Caught error: %@", error);
+        
+        XCTAssertTrue(YES);
+        [exp fulfill];
+    });
+    
+    [self.deferred reject:[NSError errorWithDomain:@"TestReject" code:0 userInfo:nil]];
+    self.deferred = nil;
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testResolve {
+    id exp = [self expectationWithDescription:@""];
+    
+    self.deferred = [LGDeferred new];
+    
+    PMKPromise *promise = self.deferred.promise;
+    
+    __weak id weakSelf = self;
+    promise.then(^(id result) {
+        NSLog(@"%@", result);
+        XCTAssertTrue(YES);
+        
+        [exp fulfill];
+    }).catch(^(NSError *error) {
+        LGDeferredTests *strongSelf = weakSelf;
+        if (!strongSelf) return;
+        
+        NSLog(@"Caught error: %@", error);
+        
+        XCTAssertTrue(NO);
+    });
+    
+    [self.deferred resolve:@1];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testResolveReject {
+    id exp = [self expectationWithDescription:@""];
+    
+    self.deferred = [LGDeferred new];
+    
+    PMKPromise *promise = self.deferred.promise;
+    
+    __weak id weakSelf = self;
+    promise.then(^(id result) {
+        NSLog(@"%@", result);
+        XCTAssertTrue(YES);
+        
+        [exp fulfill];
+    }).catch(^(NSError *error) {
+        LGDeferredTests *strongSelf = weakSelf;
+        if (!strongSelf) return;
+        
+        NSLog(@"Caught error: %@", error);
+        
+        XCTAssertTrue(NO);
+    });
+    
+    [self.deferred resolve:@1];
+    [self.deferred reject:[NSError errorWithDomain:@"TestReject" code:0 userInfo:nil]];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testRejectResolve {
+    id exp = [self expectationWithDescription:@""];
+    
+    self.deferred = [LGDeferred new];
+    
+    PMKPromise *promise = self.deferred.promise;
+    
+    __weak id weakSelf = self;
+    promise.then(^(id result) {
+        NSLog(@"%@", result);
+        XCTAssertTrue(NO);
+    }).catch(^(NSError *error) {
+        LGDeferredTests *strongSelf = weakSelf;
+        if (!strongSelf) return;
+        
+        NSLog(@"Caught error: %@", error);
+        
+        XCTAssertTrue(YES);
+        [exp fulfill];
+    });
+    
+    [self.deferred reject:[NSError errorWithDomain:@"TestReject" code:0 userInfo:nil]];
+    [self.deferred resolve:@1];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
+}
+
+- (void)testCancelResolve {
+    id exp = [self expectationWithDescription:@""];
+    
+    self.deferred = [LGDeferred new];
+    
+    PMKPromise *promise = self.deferred.promise;
+    
+    __weak id weakSelf = self;
+    promise.then(^(id result) {
+        NSLog(@"%@", result);
+        XCTAssertTrue(NO);
+    }).catch(^(NSError *error) {
+        LGDeferredTests *strongSelf = weakSelf;
+        if (!strongSelf) return;
+        
+        NSLog(@"Caught error: %@", error);
+        
+        XCTAssertTrue(YES);
+        [exp fulfill];
+    });
+    
+    [self.deferred cancel];
+    [self.deferred resolve:@1];
+    
+    [self waitForExpectationsWithTimeout:1 handler:nil];
 }
 
 @end

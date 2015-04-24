@@ -16,10 +16,12 @@ typedef void(^LGCancelDeferred)(void);
 @property (readonly, nonatomic) PMKPromise *promise;
 @property (readonly, nonatomic) BOOL cancelled;
 
-- (instancetype)initWithCancelBlock:(LGCancelDeferred)cancelBlock NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithCancelBlock:(LGCancelDeferred)cancelBlock;
 
 - (void)resolve:(id)result;
 - (void)reject:(NSError *)error;
 - (void)cancel;
+
++ (LGDeferred *)newWithCancelBlock:(LGCancelDeferred)cancelBlock;
 
 @end
